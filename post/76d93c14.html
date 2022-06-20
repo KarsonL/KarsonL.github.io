@@ -1,0 +1,313 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>A Knee_Guided Evolutionary Algorithm for Compressing Deep Neural Network （KGEA）解读 | Karson.L</title><meta name="keywords" content="pruning,model compression,deep learning,evolutionar algorithm"><meta name="author" content="Karson.L"><meta name="copyright" content="Karson.L"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="这篇文章的最主要的思想就是将模型压缩的问题转化为了多目标优化的问题，然后用改进的遗传算法来求解这个问题。主要涉及三方面的知识：模型压缩、多目标优化、遗传算法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A Knee_Guided Evolutionary Algorithm for Compressing Deep Neural Network （KGEA）解读">
+<meta property="og:url" content="https://karsonl.github.io/post/76d93c14.html">
+<meta property="og:site_name" content="Karson.L">
+<meta property="og:description" content="这篇文章的最主要的思想就是将模型压缩的问题转化为了多目标优化的问题，然后用改进的遗传算法来求解这个问题。主要涉及三方面的知识：模型压缩、多目标优化、遗传算法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20201105161659183.png">
+<meta property="article:published_time" content="2020-11-05T12:21:22.000Z">
+<meta property="article:modified_time" content="2022-06-20T05:53:13.677Z">
+<meta property="article:author" content="Karson.L">
+<meta property="article:tag" content="pruning">
+<meta property="article:tag" content="model compression">
+<meta property="article:tag" content="deep learning">
+<meta property="article:tag" content="evolutionar algorithm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20201105161659183.png"><link rel="shortcut icon" href="/./imgs/author/jide.jpg"><link rel="canonical" href="https://karsonl.github.io/post/76d93c14"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'A Knee_Guided Evolutionary Algorithm for Compressing Deep Neural Network （KGEA）解读',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-06-20 13:53:13'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.2"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/./imgs/author/jide.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://img-blog.csdnimg.cn/20201105161659183.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Karson.L</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">A Knee_Guided Evolutionary Algorithm for Compressing Deep Neural Network （KGEA）解读</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2020-11-05T12:21:22.000Z" title="发表于 2020-11-05 20:21:22">2020-11-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/model-compression/">model compression</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="A Knee_Guided Evolutionary Algorithm for Compressing Deep Neural Network （KGEA）解读"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>原论文：<a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8781874">A Knee-Guided Evolutionary Algorithm for Compression Deep Neural Networks</a></p>
+<p>该博文转载自我的CSDN博客：<a target="_blank" rel="noopener" href="https://blog.csdn.net/yellow_violet/article/details/109501387"> A Knee_Guided Evolutionary Algorithm for Compressing Deep Neural Network （KGEA）解读_Karson.L的博客-CSDN博客</a></p>
+</blockquote>
+<h1 id="1、主要思想"><a href="#1、主要思想" class="headerlink" title="1、主要思想"></a>1、主要思想</h1><p>这篇文章的最主要的思想就是将<strong>模型压缩</strong>的问题转化为了<strong>多目标优化</strong>的问题，然后用改进的<strong>遗传算法</strong>来求解这个问题。</p>
+<p>主要涉及三方面的知识：模型压缩、多目标优化、遗传算法。以下分别讲解。</p>
+<h1 id="2、模型压缩"><a href="#2、模型压缩" class="headerlink" title="2、模型压缩"></a>2、模型压缩</h1><h2 id="2-1-滤波器剪枝"><a href="#2-1-滤波器剪枝" class="headerlink" title="2.1 滤波器剪枝"></a>2.1 滤波器剪枝</h2><p>这篇文章使用的模型压缩方法是滤波器剪枝方法 [2] 。其过程如下：<br><img src="https://img-blog.csdnimg.cn/20201104214143988.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="图1 滤波器剪枝过程。虚线框表示需要被剪掉。"></p>
+<p>我们知道，在卷积神经网络中，卷积层是由多个滤波器组成的，而每个滤波器也是由多个卷积核组成的。而且，每一层的滤波器数量是等于该层的输出特征图数量的，也就是等于输出通道；而每个滤波器的卷积核数量则等于输入特征图的数量，即等于输入通道。</p>
+<p>所以，为了保持这种结构上的对应关系，在对滤波器剪枝时，在该层剪掉一个滤波器，就应相应的把该层的输出通道给剪掉，且下一层对应的每个滤波器的卷积核也应该被剪掉。像上图那样。就像这张图中的虚框一样。经过这样的剪枝后，网络的参数大大减小了。这就是滤波器剪枝的过程。</p>
+<p>在滤波器剪枝研究中，最重要的问题就是如何去选择那些被剪的滤波器。或说，如何衡量滤波器的重要性。</p>
+<h2 id="2-2-衡量滤波器重要性"><a href="#2-2-衡量滤波器重要性" class="headerlink" title="2.2 衡量滤波器重要性"></a>2.2 衡量滤波器重要性</h2><p>一般的做法：</p>
+<ul>
+<li><strong>基于滤波器的权重值：</strong> 如求权重和（<strong>Weight Sum, WS</strong>）[2]，和越大，则越重要；</li>
+<li><strong>基于激活函数：</strong> 基于激活函数：如计算激活函数输出中0占的比例（<strong>Average Percentage of Zeros，APoZ</strong>) [3] ;</li>
+<li><strong>基于重建误差：</strong> 如通过最小化特征重建误差来确定哪些滤波器需要裁剪（<strong>ThiNet</strong>）[4] 。</li>
+</ul>
+<p>本文没有使用以上的方法，而是根据一个最直接的指标——<strong>神经网络的性能</strong>来衡量滤波器的重要性。同时考虑<strong>网络性能</strong>和<strong>滤波器数量</strong>，以找到平衡两者的最优结构。</p>
+<p>滤波器重不重要，网络性能最能说明问题。剪掉一个滤波器，如果性能变得很差，那说明这个滤波器很重要，但是如果性能几乎不变，，那就说明这个滤波器不重要，可以剪掉。所以用网络性能来衡量滤波器重要性是非常直接且有效的。</p>
+<p>既然是模型压缩问题，滤波器数量当然是要考虑的，我们希望得到一个参数量更小的网络。所以，要同时优化<strong>网络性能</strong>和<strong>滤波器数</strong>量这两个目标，这就成为了一个<strong>多目标优化</strong>的问题了。</p>
+<p>这就是文章给出的这个问题的数学表达。</p>
+<p><img src="https://img-blog.csdnimg.cn/20201105161248681.png#pic_center" alt="在这里插入图片描述"></p>
+<p>其中，C是cost，也就是网络的损失函数，D是数据集。W是滤波器权重，M是掩膜，其元素全为0或1。M乘W的意思就是：若M全为0则，则乘上W后W就变为0，就相当于把这个滤波器剪掉了。若全为1，则W不变，也就是保留这个滤波器。这样就能达到剪枝和保留的作用了。</p>
+<p>第二个式子用1-范数来计算滤波器数量，即计算有多少元素全为1的M的个数，有多少个元素全为1的M，那就有多少个滤波器保留下来。</p>
+<p>就这样，通过这个式子，滤波器剪枝问题就变成了一个多目标优化的问题。接下来，就是如何去求解这个问题了。</p>
+<h1 id="3、KGEA"><a href="#3、KGEA" class="headerlink" title="3、KGEA"></a>3、KGEA</h1><p>本文使用的求解办法是<strong>膝盖导向进化算法（ Knee_guided Evolutionary Algorithm, KGEA）</strong>。它是<strong>进化算法</strong>的一种，是对<strong>非支配排序遗传算法（Non-dominated Sorting Genetic Algorithm, NSGA-II）</strong> [5] 的改进，主要就是提出使用<strong>最小曼哈顿距离（Minimum Manhattan Distance, MMD）</strong> [6] 来计算种群中的一个最优解，即<strong>膝盖knee</strong>，然后以Knee为进化方向，选择优秀的个体保留到下一代种群中。这就是KGEA的主要思想。<br><img src="https://img-blog.csdnimg.cn/20201104220705267.png#pic_center" alt="KGEA 框架"></p>
+<h2 id="3-1-NSGA-II"><a href="#3-1-NSGA-II" class="headerlink" title="3.1 NSGA-II"></a>3.1 NSGA-II</h2><p>在讲解NSGA-II前，有些概念需要被知道。</p>
+<blockquote>
+<ul>
+<li><strong>支配与非支配：</strong> 如果任何两个解S1和S2对所有目标而言，S1均优于S2，则称S1支配S2；若S1不被其他解支配，则S1即为<strong>非支配解</strong>，即不被支配的解。</li>
+</ul>
+</blockquote>
+<p><img src="https://img-blog.csdnimg.cn/20201105161418815.png#pic_center" alt="示例"></p>
+<p>如这里有4个个体ABCD，A和B相对于C和D来说，在网络损失和滤波器数量上都要好，且A和B之间没有说哪一个非常好的，所以A和B就是非支配解。同样的，C相对于D来说也是非支配解。</p>
+<blockquote>
+<ul>
+<li><p><strong>帕雷托前沿面：</strong> 就是在找到非支配解后，这些解所形成的曲面就是<strong>帕雷托前沿面（Pareto Front，PF）</strong> 。</p>
+<p><img src="https://img-blog.csdnimg.cn/20201105161525829.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="帕雷托前沿面"></p>
+</li>
+</ul>
+</blockquote>
+<p>如这里，AB 就构成一个PF，C构成一个PF，D一个PF。因为这里只有两个目标，所以PF是曲线。当目标数较多时，PF就是曲面。</p>
+<blockquote>
+<ul>
+<li><strong>非支配排序：</strong> 对帕雷托前沿面从非支配到被支配进行排序。非支配解排在前面。</li>
+</ul>
+</blockquote>
+<p>这里，AB构成的PF排第一，接着是C，到D。</p>
+<p>可以看到，PF排名靠前的个体在各方面都比排名靠后的个体要优秀的。</p>
+<p>所以，NSGA-II的<strong>思想</strong>就是<strong>将这些PF排名靠前的个体作为精英保留到下一代，使种群往更优的方向发展，加快搜索到最优解的速度。</strong></p>
+<ul>
+<li><strong>算法</strong><br><img src="https://img-blog.csdnimg.cn/20201105161659183.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></li>
+</ul>
+<blockquote>
+<p><strong>算法:  NSGA-II</strong>                                                                             </p>
+<ol>
+<li>由<strong>遗传算法</strong>产生种群Pt； </li>
+<li>种群个体<strong>变异</strong>，产生的子代Qt和父代Pt一起构成新的种群Rt；</li>
+<li>对种群进行<strong>非支配排序</strong>，保留<strong>帕雷托前沿面（PF)</strong>排名靠前的个体；</li>
+<li>若保留的个体超出种群个数，则对PF最后的个体进行<strong>拥挤距离</strong>计算，保留拥挤距离较大的个体；</li>
+<li>保留下来的个体构成新种群Pt+1，继续遗传进化；</li>
+</ol>
+</blockquote>
+<p>这就是NSGA-II的过程。首先遗传算法，产生种群，然后变异产生子代，子代和父代合并为新的种群，对种群进行非支配排序，保留PF靠前的个体。</p>
+<p>但这里有个问题就是，要保留的个体可能超出种群的数量。所以这里，NSGA提出对要保留的最后一个PF里的个体再进行一次拥挤距离排序。</p>
+<p><img src="https://img-blog.csdnimg.cn/20201105161913637.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="拥挤距离"></p>
+<p>所谓<strong>拥挤距离</strong>，就是计算一个解与最近两个解的在各个目标上的距离。如图中的i 。计算公式如上，简单理解就是计算这个长方形的周长的一半。从上图可以看出，i与i-1、i+1在f1上的距离就是长方形的长，f2上就是宽，所以就是长方形周长的一半。</p>
+<p>拥挤距离表示的是<strong>解的相似度</strong>。如果保留的解都是相似度高的，则容易陷入局部最优中，所以，为了<strong>保持种群的多样性，增加探索</strong>，所以要保留那些拥挤距离大的个体。</p>
+<p>这就是整个NSGA-II的一个过程了。</p>
+<h2 id="3-2-KGEA"><a href="#3-2-KGEA" class="headerlink" title="3.2 KGEA"></a>3.2 KGEA</h2><ul>
+<li><strong>思想</strong></li>
+</ul>
+<p><strong>膝盖进化算法在NSGA-II的基础上，提出拥挤距离排序阶段，使用膝盖导向作为主要的个体选择方法，而拥挤距离则作为辅助方法，然后综合这两种方法来选择要保留的个体。</strong></p>
+<p><img src="https://img-blog.csdnimg.cn/2020110422461339.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="KGEA对NSGA-II的改进"><br>所谓的膝盖是指种群中在各个目标上都比较平衡且优秀的个体。一般就是那个拐点，像人的膝盖一样，所以叫做膝盖，如下图。因为膝盖是平衡了各个目标的最优解，所以将其作为一个进化方向，保留其附近的个体，能让种群发展更好，更快收敛。</p>
+<p><img src="https://img-blog.csdnimg.cn/20201104225122629.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="knee-guided 过程"><br>怎么找到这个膝盖呢？文章提出使用<strong>最小化曼哈顿距离（Minimum Manhattan Distance, MMD）</strong> 来求这个膝盖。其公式如下，其实曼哈顿距离就是1-范数。这个公式的意思就是求每个点与理想点组成的向量的模，就是距离，距离最小的点就是膝盖点，这个向量就是膝盖向量knee vector。</p>
+<script type="math/tex; mode=display">\small x^* = \argmin_x  ||{f(x)\above{1pt} L} -{Z^{\min} \above{1pt} L}||_1 \\
+\small where \space L=\max f(x)-\min f(x),\\
+\small Z^{\min }=\min f(x), \space  ||\cdotp||_1 \space represents  \space the \space Manhattan \space norm.</script><p>又因为用MMD来求膝盖向量的时候需要<strong>边界信息</strong>，即公式里的L和Z^min^ ，所以边界周围的点也被认为是重要的。</p>
+<p>因此，这个膝盖导向就变成了，以两个边界和一个膝盖向量为参考向量，综合选择与他们相近的个体保留到下一代。</p>
+<p>如何衡量这个近，本文使用的就是计算和这三个参考向量的<strong>夹角</strong>，并分别排序，保留那些排名靠前的个体。</p>
+<p>这就是这篇膝盖导向算法的改进过程。</p>
+<h2 id="3-3-KGEA算法"><a href="#3-3-KGEA算法" class="headerlink" title="3.3 KGEA算法"></a>3.3 KGEA算法</h2><p><img src="https://img-blog.csdnimg.cn/20201105160047116.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="KGEA"><br><img src="https://img-blog.csdnimg.cn/20201105160057377.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="KGEA"><br><img src="https://img-blog.csdnimg.cn/20201105160147869.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="KGEA"></p>
+<p>这就是整个KGEA的算法。</p>
+<p>KGEA和NSGA-II的不同就是这些红框标出来的地方。首先利用MMD求膝盖向量，然后和两个边界一起作为参考向量。然后在要保留的PF超过群体数量后，对最后一个PF的个体再进行一次排序，就是计算每个个体和那三个参考向量的角度，然后进行排序，作为主要的选择依据。同时，这里也还是使用了NSGA-II里面的拥挤度排序，作为一个辅助选择依据。最后综合考虑这两个排序，保留那些排序靠前的个体到下一代。</p>
+<h1 id="4、实验"><a href="#4、实验" class="headerlink" title="4、实验"></a>4、实验</h1><p>为验证KGEA的效果，文章做了实验。</p>
+<p>使用KGEA对一个训练好的全卷积LeNet进行剪枝，并在MNIST数据集上进行验证。<br><img src="https://img-blog.csdnimg.cn/20201105162211492.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="实验结果"><br><img src="https://img-blog.csdnimg.cn/20201105091953508.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="对比实验结果"><br>这就是实验完后的结果。在剪枝后，还对剪枝后的网络进行了<strong>微调</strong>，也就是再训练了几个回合。</p>
+<p>可以看到，剪枝后，参数的数量已经减少了81.34%，而且，经过微调后的网络的精度反而还提高了。</p>
+<p>这足以说明这篇文章提出的方法的有效性。这也能够说明，神经网络确实有很多参数是冗余的。所以研究神经网络的压缩是有必要的，对<strong>神经网络自组织原理</strong>的研究也是很有必要的。</p>
+<h1 id="5、总结"><a href="#5、总结" class="headerlink" title="5、总结"></a>5、总结</h1><p>好了，这就是这篇文章的所有内容了。</p>
+<p>总的来说，就是将卷积神经网络滤波器剪枝这样一个模型压缩的问题，转化为了一个多目标优化的问题，也就是同时考虑了网络的性能和滤波器的数量这两个目标，然后用改进的遗传算法即KGEA来求解这个问题。</p>
+<p><img src="https://img-blog.csdnimg.cn/2020110509221857.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3llbGxvd192aW9sZXQ=,size_16,color_FFFFFF,t_70#pic_center" alt="文章整体框架"></p>
+<h1 id="6、参考文献"><a href="#6、参考文献" class="headerlink" title="6、参考文献"></a>6、参考文献</h1><p>[1] A Knee-Guided Evolutionary Algorithm for Compression Deep Neural Networks<br>[2] Pruning Filters for Efficient Convnets<br>[3] Network Trimming: A Data-Driven Neuron Pruning Approach towards Efficient Deep Architectures<br>[4] ThiNet: A Filter Level Pruning Method for Deep Neural Network Compression<br>[5] A Fast and Elitist Multiobjective Genetic Algorithm：NSGA-II<br>[6] Minimum Manhattan Distance Approach to Multiple  Criteria Decision Making in Multiobjective Optimization Problems</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://karsonl.github.io">Karson.L</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://karsonl.github.io/post/76d93c14.html">https://karsonl.github.io/post/76d93c14.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://karsonl.github.io" target="_blank">Karson.L</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/pruning/">pruning</a><a class="post-meta__tags" href="/tags/model-compression/">model compression</a><a class="post-meta__tags" href="/tags/deep-learning/">deep learning</a><a class="post-meta__tags" href="/tags/evolutionar-algorithm/">evolutionar algorithm</a></div><div class="post_share"><div class="social-share" data-image="https://img-blog.csdnimg.cn/20201105161659183.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/./imgs/reward/wechat-pay.jpg" target="_blank"><img class="post-qr-code-img" src="/./imgs/reward/wechat-pay.jpg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/6043f745.html"><img class="prev-cover" src="/imgs/hexo/hexo-white.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">基于Hexo创建个人博客</div></div></a></div><div class="next-post pull-right"><a href="/post/0.html"><img class="next-cover" src="https://img-blog.csdnimg.cn/20201224160209513.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">AMC：AutoML for Model Compression and Acceleration on Mobile Devices 论文笔记</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/0.html" title="AMC：AutoML for Model Compression and Acceleration on Mobile Devices 论文笔记"><img class="cover" src="https://img-blog.csdnimg.cn/20201224160209513.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-24</div><div class="title">AMC：AutoML for Model Compression and Acceleration on Mobile Devices 论文笔记</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/./imgs/author/jide.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Karson.L</div><div class="author-info__description">小小程序员</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/KarsonL"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/KarsonL" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/1246737796@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1%E3%80%81%E4%B8%BB%E8%A6%81%E6%80%9D%E6%83%B3"><span class="toc-number">1.</span> <span class="toc-text">1、主要思想</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2%E3%80%81%E6%A8%A1%E5%9E%8B%E5%8E%8B%E7%BC%A9"><span class="toc-number">2.</span> <span class="toc-text">2、模型压缩</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E6%BB%A4%E6%B3%A2%E5%99%A8%E5%89%AA%E6%9E%9D"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 滤波器剪枝</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E8%A1%A1%E9%87%8F%E6%BB%A4%E6%B3%A2%E5%99%A8%E9%87%8D%E8%A6%81%E6%80%A7"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 衡量滤波器重要性</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3%E3%80%81KGEA"><span class="toc-number">3.</span> <span class="toc-text">3、KGEA</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-NSGA-II"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 NSGA-II</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-KGEA"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 KGEA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-KGEA%E7%AE%97%E6%B3%95"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 KGEA算法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4%E3%80%81%E5%AE%9E%E9%AA%8C"><span class="toc-number">4.</span> <span class="toc-text">4、实验</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">5、总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6%E3%80%81%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-number">6.</span> <span class="toc-text">6、参考文献</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/560fed86.html" title="Docker 应用部署"><img src="/imgs/docker/docker.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Docker 应用部署"/></a><div class="content"><a class="title" href="/post/560fed86.html" title="Docker 应用部署">Docker 应用部署</a><time datetime="2022-06-18T11:08:56.869Z" title="发表于 2022-06-18 19:08:56">2022-06-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/817c7d82.html" title="Linux 常用命令"><img src="/./imgs/linux/linux.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux 常用命令"/></a><div class="content"><a class="title" href="/post/817c7d82.html" title="Linux 常用命令">Linux 常用命令</a><time datetime="2022-04-13T07:34:12.000Z" title="发表于 2022-04-13 15:34:12">2022-04-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/0.html" title="sqlzoo-练习5——SUM and COUNT"><img src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="sqlzoo-练习5——SUM and COUNT"/></a><div class="content"><a class="title" href="/post/0.html" title="sqlzoo-练习5——SUM and COUNT">sqlzoo-练习5——SUM and COUNT</a><time datetime="2021-07-28T07:07:26.000Z" title="发表于 2021-07-28 15:07:26">2021-07-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/0.html" title="sqlzoo 练习 4——SELECT within SELECT"><img src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="sqlzoo 练习 4——SELECT within SELECT"/></a><div class="content"><a class="title" href="/post/0.html" title="sqlzoo 练习 4——SELECT within SELECT">sqlzoo 练习 4——SELECT within SELECT</a><time datetime="2021-07-27T15:28:50.000Z" title="发表于 2021-07-27 23:28:50">2021-07-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/0.html" title="sqlzoo 练习1、2——SELECT from WORLD)"><img src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="sqlzoo 练习1、2——SELECT from WORLD)"/></a><div class="content"><a class="title" href="/post/0.html" title="sqlzoo 练习1、2——SELECT from WORLD)">sqlzoo 练习1、2——SELECT from WORLD)</a><time datetime="2021-07-27T12:25:53.000Z" title="发表于 2021-07-27 20:25:53">2021-07-27</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://img-blog.csdnimg.cn/20201105161659183.png')"><div id="footer-wrap"><div class="copyright">&copy;2022 By Karson.L</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Welcome to my blog!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (true){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
