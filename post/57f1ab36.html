@@ -1,0 +1,279 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>sqlzoo 练习 4——SELECT within SELECT | Karson.L</title><meta name="keywords" content="mysql,sqlzoo"><meta name="author" content="Karson.L"><meta name="copyright" content="Karson.L"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="sqlzoo-SELECT within SELECT Tutorial">
+<meta property="og:type" content="article">
+<meta property="og:title" content="sqlzoo 练习 4——SELECT within SELECT">
+<meta property="og:url" content="https://karsonl.github.io/post/57f1ab36.html">
+<meta property="og:site_name" content="Karson.L">
+<meta property="og:description" content="sqlzoo-SELECT within SELECT Tutorial">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png">
+<meta property="article:published_time" content="2021-07-27T15:28:50.000Z">
+<meta property="article:modified_time" content="2022-06-20T07:25:02.841Z">
+<meta property="article:author" content="Karson.L">
+<meta property="article:tag" content="mysql">
+<meta property="article:tag" content="sqlzoo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png"><link rel="shortcut icon" href="/./imgs/author/jide.jpg"><link rel="canonical" href="https://karsonl.github.io/post/57f1ab36"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'sqlzoo 练习 4——SELECT within SELECT',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2022-06-20 15:25:02'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.2"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/./imgs/author/jide.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Karson.L</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">sqlzoo 练习 4——SELECT within SELECT</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2021-07-27T15:28:50.000Z" title="发表于 2021-07-27 23:28:50">2021-07-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/mysql/">mysql</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/mysql/sqlzoo/">sqlzoo</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="sqlzoo 练习 4——SELECT within SELECT"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>该博文转载自我的CSDN博客：<a target="_blank" rel="noopener" href="https://blog.csdn.net/yellow_violet/article/details/119153501?spm=1001.2014.3001.5502">sqlzoo 练习 4——SELECT within SELECT_Karson.L的博客-CSDN博客</a></p>
+</blockquote>
+<p>sqlzoo-SELECT within SELECT Tutorial: <a target="_blank" rel="noopener" href="https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial">https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial</a></p>
+<blockquote>
+<p>这次主要是 <strong>SELECT 的嵌套</strong>。即 <strong><font color =red>子查询 </font></strong> 。</p>
+</blockquote>
+<p>1、List each country name where the population is larger than that of ‘Russia’.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">SELECT</span> name <span class="variable constant_">FROM</span> world</span><br><span class="line"><span class="variable constant_">WHERE</span> population &gt;</span><br><span class="line">     (<span class="variable constant_">SELECT</span> population <span class="variable constant_">FROM</span> world</span><br><span class="line">      <span class="variable constant_">WHERE</span> name=<span class="string">&#x27;Russia&#x27;</span>)</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>使用 SELECT 嵌套 SELECT， 用 <strong>WHERE 和 括号（）</strong> 衔接两个 SELECT。 </p>
+</blockquote>
+<p>2、Show the countries in Europe with a per capital GDP greater than ‘United Kingdom’.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">SELECT</span> name <span class="variable constant_">FROM</span> world</span><br><span class="line"><span class="variable constant_">WHERE</span> continent=<span class="string">&#x27;Europe&#x27;</span> </span><br><span class="line"><span class="variable constant_">AND</span> gdp/population &gt; </span><br><span class="line">	(<span class="variable constant_">SELECT</span> gdp/population <span class="variable constant_">FROM</span> world</span><br><span class="line">		<span class="variable constant_">WHERE</span> name = <span class="string">&#x27;United Kingdom&#x27;</span>)</span><br></pre></td></tr></table></figure><br>3、List the name and continent of countries in the continents containing either Argentina or Australia. Order by name of the country.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">SELECT</span> name, continent <span class="variable constant_">FROM</span> world</span><br><span class="line"><span class="variable constant_">WHERE</span> continent <span class="variable constant_">IN</span> </span><br><span class="line">	(<span class="variable constant_">SELECT</span> continent <span class="variable constant_">FROM</span> world</span><br><span class="line">		<span class="variable constant_">WHERE</span> name <span class="variable constant_">IN</span> (<span class="string">&#x27;Argentina&#x27;</span> , <span class="string">&#x27;Australia&#x27;</span>))</span><br><span class="line"><span class="variable constant_">ORDER</span> <span class="variable constant_">BY</span> name</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>和单独使用 SELECT 一样， 可以用 IN 来限定范围。用 IN 时，IN 前的列名 和 IN 后 SELECT 的列名，应当一致。 WHERE xxx IN ( SELECT xxx …)</p>
+</blockquote>
+<p>4、Which country has a population that is more than Canada but less than Poland? Show the name and the population.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">SELECT</span> name, population <span class="variable constant_">FROM</span> world</span><br><span class="line"><span class="variable constant_">WHERE</span> population &gt; </span><br><span class="line">	(<span class="variable constant_">SELECT</span> population <span class="variable constant_">FROM</span> world</span><br><span class="line">		<span class="variable constant_">WHERE</span> name = <span class="string">&#x27;Canada&#x27;</span>)</span><br><span class="line"><span class="variable constant_">AND</span> population &lt;</span><br><span class="line">	(<span class="variable constant_">SELECT</span> population <span class="variable constant_">FROM</span> world</span><br><span class="line">		<span class="variable constant_">WHERE</span> name = <span class="string">&#x27;Poland&#x27;</span>)</span><br></pre></td></tr></table></figure><br>5、Germany (population 80 million) has the largest population of the countries in Europe. Austria (population 8.5 million) has 11% of the population of Germany.<br>Show the name and the population of each country in Europe. Show the population as a percentage of the population of Germany.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">SELECT</span> name, <span class="title function_">CONCAT</span>(</span><br><span class="line"><span class="title function_">CAST</span>(<span class="title function_">ROUND</span>(population*<span class="number">100</span>/(<span class="variable constant_">SELECT</span> population <span class="variable constant_">FROM</span> world <span class="variable constant_">WHERE</span> name = <span class="string">&#x27;Germany&#x27;</span>),<span class="number">0</span>) </span><br><span class="line"><span class="variable constant_">AS</span> <span class="variable constant_">DECIMAL</span>), <span class="string">&#x27;%&#x27;</span>)</span><br><span class="line"><span class="variable constant_">FROM</span> world</span><br><span class="line"><span class="variable constant_">WHERE</span> continent = <span class="string">&#x27;Europe&#x27;</span></span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<ul>
+<li>SELECT 嵌套 也可以用在 <strong>SELECT 后（作为计算字段）</strong>， 用括号（）区分。</li>
+<li>这里使用<strong>ROUND (number, 0)</strong> 将 数字后面的小数点去掉。但是，因为使用了concat()函数，所以那个数字后面多了12个0（不知道为什么，数据类型不对吗？），所以还需要使用 <strong>CAST ( )</strong> 函数。</li>
+<li><strong><font color=red> CAST(a AS type) </font></strong> 可以将数据 a 的类型转换到 type 类型。concat( ) 操作的主要是字符串，而 ROUND( ) 出来的是数，所以需要将其转换为其他类型。  （可转为 <strong>DECIMAL(小数)， INT(整型)， REAL(不知道是什么)</strong>）。</li>
+<li><strong>关于CAST()函数 ——》</strong> <a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_35118528/article/details/100140692">cast</a>、<a target="_blank" rel="noopener" href="https://blog.csdn.net/baocheng_521/article/details/78950974">cast</a></li>
+<li><strong>CAST函数有点复杂，反复看。</strong></li>
+</ul>
+</blockquote>
+<p>6、Which countries have a GDP greater than every country in Europe? [Give the name only.] (Some countries may have NULL gdp values)<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">SELECT</span> name <span class="variable constant_">FROM</span> world</span><br><span class="line"><span class="variable constant_">WHERE</span> gdp &gt;= <span class="variable constant_">ALL</span></span><br><span class="line">	(<span class="variable constant_">SELECT</span> gdp <span class="variable constant_">FROM</span> world</span><br><span class="line">		<span class="variable constant_">WHERE</span> gdp  &gt; <span class="number">0</span> </span><br><span class="line">		<span class="variable constant_">AND</span> continent = <span class="string">&#x27;Europe&#x27;</span>)</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<ul>
+<li>使用 <strong><font color=red> ALL</font></strong>  来表示 <strong>所有</strong>。</li>
+</ul>
+</blockquote>
+<p>7、Find the largest country (by area) in <strong>each continent,</strong> show the continent, the name and the area<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">SELECT</span> continent, name, area <span class="variable constant_">FROM</span> world <span class="variable constant_">AS</span> x</span><br><span class="line">  <span class="variable constant_">WHERE</span> area &gt;= <span class="variable constant_">ALL</span></span><br><span class="line">    (<span class="variable constant_">SELECT</span> area <span class="variable constant_">FROM</span> world <span class="variable constant_">AS</span> y</span><br><span class="line">        <span class="variable constant_">WHERE</span> y.<span class="property">continent</span>=x.<span class="property">continent</span></span><br><span class="line">          <span class="variable constant_">AND</span> area&gt;<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<ul>
+<li>这里需要使用<strong>表别名</strong> 来给不同的SELECT的表格起名，以区分不同的SELECT。若这里不起别名，则找到的是所有国家中面积最大的国家。</li>
+<li>使用 <strong><font color=red> FROM 表名 AS 别名 </font></strong> 来命名表别名。</li>
+<li>使用的别名可以在嵌套的SELECT中用来代表表格，如<strong>y.continent=x.continent</strong>，表示内外查询之分。</li>
+<li>像是<strong>自联结</strong></li>
+</ul>
+</blockquote>
+<p>8、List each continent and the name of the country that comes first alphabetically.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">SELECT</span> continent, name <span class="variable constant_">FROM</span> world <span class="variable constant_">AS</span> x</span><br><span class="line"><span class="variable constant_">WHERE</span> name &lt;= <span class="variable constant_">ALL</span></span><br><span class="line">(<span class="variable constant_">SELECT</span> name <span class="variable constant_">FROM</span> world <span class="variable constant_">AS</span> y</span><br><span class="line"><span class="variable constant_">WHERE</span> x.<span class="property">continent</span> = y.<span class="property">continent</span> )</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<ul>
+<li>按字母表顺序找每个洲的第一个国家。直接按字符串比较，最小的就是按字母表最小的。</li>
+</ul>
+</blockquote>
+<p>9、Find the continents where all countries have a population &lt;= 25000000. Then find the names of the countries associated with these continents. Show name, continent and population.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">SELECT</span> name, continent, population <span class="variable constant_">FROM</span> world <span class="variable constant_">AS</span> x</span><br><span class="line"><span class="variable constant_">WHERE</span> <span class="number">25000000</span> &gt;= <span class="variable constant_">ALL</span> (<span class="variable constant_">SELECT</span> population <span class="variable constant_">FROM</span> world <span class="variable constant_">AS</span> y</span><br><span class="line"><span class="variable constant_">WHERE</span> x.<span class="property">continent</span> = y.<span class="property">continent</span> )</span><br></pre></td></tr></table></figure><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//其他答案, 用了 GROUP BY ... HAVING... 很巧妙</span></span><br><span class="line"><span class="variable constant_">SELECT</span> name, continent, population</span><br><span class="line"><span class="variable constant_">FROM</span> world</span><br><span class="line"><span class="variable constant_">WHERE</span> continent <span class="variable constant_">IN</span> (<span class="variable constant_">SELECT</span> continent</span><br><span class="line">                    <span class="variable constant_">FROM</span> world</span><br><span class="line">                    <span class="variable constant_">GROUP</span> <span class="variable constant_">BY</span> continent <span class="variable constant_">HAVING</span> <span class="title function_">MAX</span>(population) &lt;= <span class="number">25000000</span>)</span><br></pre></td></tr></table></figure></p>
+<p>10、Some countries have populations more than three times that of any of their neighbours (in the same continent). Give the countries and continents.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">SELECT</span> name, continent <span class="variable constant_">FROM</span> world <span class="variable constant_">AS</span> x</span><br><span class="line"><span class="variable constant_">WHERE</span> population &gt;= <span class="variable constant_">ALL</span> (<span class="variable constant_">SELECT</span> <span class="number">3</span>*population <span class="variable constant_">AS</span> p <span class="variable constant_">FROM</span> world <span class="variable constant_">AS</span> y</span><br><span class="line"><span class="variable constant_">WHERE</span> y.<span class="property">continent</span> = x.<span class="property">continent</span> </span><br><span class="line"><span class="variable constant_">AND</span> y.<span class="property">name</span> &lt;&gt; x.<span class="property">name</span>)</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<ul>
+<li>最后那里 还得加上 <strong>不等于</strong> 自身 ，否则会不通过。</li>
+</ul>
+</blockquote>
+<hr>
+<blockquote>
+<ul>
+<li>这次的题有点难了， 有些逻辑上没想明白，有些是内置函数用的不熟练。<strong>CAST、GROUP BY、 HAVING、子查询、内部联结</strong>……都要再复习一下。</li>
+</ul>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://karsonl.github.io">Karson.L</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://karsonl.github.io/post/57f1ab36.html">https://karsonl.github.io/post/57f1ab36.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://karsonl.github.io" target="_blank">Karson.L</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/mysql/">mysql</a><a class="post-meta__tags" href="/tags/sqlzoo/">sqlzoo</a></div><div class="post_share"><div class="social-share" data-image="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/./imgs/reward/wechat-pay.jpg" target="_blank"><img class="post-qr-code-img" src="/./imgs/reward/wechat-pay.jpg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/post/57684872.html"><img class="prev-cover" src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">sqlzoo 练习1、2——SELECT from WORLD)</div></div></a></div><div class="next-post pull-right"><a href="/post/25e263b7.html"><img class="next-cover" src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">sqlzoo-练习5——SUM and COUNT</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/57684872.html" title="sqlzoo 练习1、2——SELECT from WORLD)"><img class="cover" src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-07-27</div><div class="title">sqlzoo 练习1、2——SELECT from WORLD)</div></div></a></div><div><a href="/post/866b0930.html" title="sqlzoo 练习3——SELECT from Nobel"><img class="cover" src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-07-27</div><div class="title">sqlzoo 练习3——SELECT from Nobel</div></div></a></div><div><a href="/post/25e263b7.html" title="sqlzoo-练习5——SUM and COUNT"><img class="cover" src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-07-28</div><div class="title">sqlzoo-练习5——SUM and COUNT</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/./imgs/author/jide.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Karson.L</div><div class="author-info__description">小小程序员</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/KarsonL"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/KarsonL" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/1246737796@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/560fed86.html" title="Docker 应用部署"><img src="/imgs/docker/docker.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Docker 应用部署"/></a><div class="content"><a class="title" href="/post/560fed86.html" title="Docker 应用部署">Docker 应用部署</a><time datetime="2022-06-18T11:08:56.869Z" title="发表于 2022-06-18 19:08:56">2022-06-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/817c7d82.html" title="Linux 常用命令"><img src="/./imgs/linux/linux.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux 常用命令"/></a><div class="content"><a class="title" href="/post/817c7d82.html" title="Linux 常用命令">Linux 常用命令</a><time datetime="2022-04-13T07:34:12.000Z" title="发表于 2022-04-13 15:34:12">2022-04-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/25e263b7.html" title="sqlzoo-练习5——SUM and COUNT"><img src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="sqlzoo-练习5——SUM and COUNT"/></a><div class="content"><a class="title" href="/post/25e263b7.html" title="sqlzoo-练习5——SUM and COUNT">sqlzoo-练习5——SUM and COUNT</a><time datetime="2021-07-28T07:07:26.000Z" title="发表于 2021-07-28 15:07:26">2021-07-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/57f1ab36.html" title="sqlzoo 练习 4——SELECT within SELECT"><img src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="sqlzoo 练习 4——SELECT within SELECT"/></a><div class="content"><a class="title" href="/post/57f1ab36.html" title="sqlzoo 练习 4——SELECT within SELECT">sqlzoo 练习 4——SELECT within SELECT</a><time datetime="2021-07-27T15:28:50.000Z" title="发表于 2021-07-27 23:28:50">2021-07-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/57684872.html" title="sqlzoo 练习1、2——SELECT from WORLD)"><img src="https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="sqlzoo 练习1、2——SELECT from WORLD)"/></a><div class="content"><a class="title" href="/post/57684872.html" title="sqlzoo 练习1、2——SELECT from WORLD)">sqlzoo 练习1、2——SELECT from WORLD)</a><time datetime="2021-07-27T12:25:53.000Z" title="发表于 2021-07-27 20:25:53">2021-07-27</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://img-blog.csdnimg.cn/471ad4aa35ff41778d06c1501bf1e9de.png')"><div id="footer-wrap"><div class="copyright">&copy;2022 By Karson.L</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Welcome to my blog!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (true){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
