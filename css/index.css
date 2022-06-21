@@ -1328,8 +1328,8 @@ canvas:not(#ribbon-canvas),
   --global-font-size: 14px;
   --global-bg: #fff;
   --font-color: #4c4948;
-  --hr-border: #d2ebfd;
-  --hr-before-color: #bfe4fb;
+  --hr-border: #a4d8fa;
+  --hr-before-color: #80c8f8;
   --search-bg: #f6f8fa;
   --search-input-color: #4c4948;
   --search-result-title: #4c4948;
@@ -1342,7 +1342,7 @@ canvas:not(#ribbon-canvas),
   --tab-button-active-bg: #fff;
   --card-bg: #fff;
   --sidebar-bg: #f6f8fa;
-  --btn-hover-color: #49b1f5;
+  --btn-hover-color: #00c4b6;
   --btn-color: #fff;
   --btn-bg: #9c6;
   --text-bg-hover: rgba(153,204,102,0.7);
@@ -1356,7 +1356,7 @@ canvas:not(#ribbon-canvas),
   --toc-link-color: #666261;
   --card-box-shadow: 0 3px 8px 6px rgba(7,17,27,0.05);
   --card-hover-box-shadow: 0 3px 8px 6px rgba(7,17,27,0.09);
-  --pseudo-hover: #49b1f5;
+  --pseudo-hover: #00c4b6;
   --headline-presudo: #a0a0a0;
   --scrollbar-color: #9c6;
 }
@@ -4182,7 +4182,7 @@ h1.page-title + .tag-cloud-list {
   overflow-wrap: break-word;
 }
 #article-container a {
-  color: #99a9bf;
+  color: #49b1f5;
 }
 #article-container a:hover {
   text-decoration: underline;
@@ -4653,7 +4653,7 @@ h1.page-title + .tag-cloud-list {
 #waline-wrap {
   --waline-font-size: 1.1em;
   --waline-theme-color: #9c6;
-  --waline-active-color: #49b1f5;
+  --waline-active-color: #00c4b6;
 }
 #waline-wrap .vuser {
   -webkit-transition: all 0.5s;
